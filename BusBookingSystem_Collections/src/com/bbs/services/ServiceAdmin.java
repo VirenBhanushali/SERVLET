@@ -2,6 +2,7 @@ package com.bbs.services;
 
 import java.util.HashMap;
 
+import com.bbs.beans.Admin;
 import com.bbs.beans.Available;
 import com.bbs.beans.Bus;
 
@@ -14,5 +15,7 @@ public interface ServiceAdmin {
 	public HashMap<Integer, Bus> busBetween(String source,String destination);
 	public String checkUserIdAndBookinIdAndBusId(String number);
 	public Boolean addAvailability(Available available);
+	public Admin searchAdmin(int adminId);
+
 
 }

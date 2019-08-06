@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.bbs.beans.Admin;
 import com.bbs.beans.Available;
 import com.bbs.beans.Bus;
 import com.bbs.dao.DaoAdmin;
@@ -54,15 +55,21 @@ public class AdminServicImpl implements ServiceAdmin {
 		 }
 		 else
 		 {
-			 return null;
+			 CustomException exception = new CustomException("CustomException:BusId ALREADY Exist");
+				exception.getMessage();
 		 }
-		 
+		 return null;
 	
 	}
 
 	@Override
 	public Boolean addAvailability(Available available) {
 		return admin.addAvailability(available);
+	}
+
+	@Override
+	public Admin searchAdmin(int adminId) {
+		return admin.searchAdmin(adminId);
 	}
 
 }

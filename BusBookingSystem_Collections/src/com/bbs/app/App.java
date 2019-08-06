@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.bbs.beans.Admin;
 import com.bbs.beans.Available;
 import com.bbs.beans.Booking;
 import com.bbs.beans.Bus;
@@ -16,8 +17,10 @@ import com.bbs.beans.User;
 import com.bbs.exception.BookingFailedException;
 import com.bbs.exception.CancelFailedException;
 import com.bbs.exception.CustomException;
+import com.bbs.exception.DeleteFailedException;
 import com.bbs.exception.LoginException;
 import com.bbs.exception.TicketRetrievalFailedException;
+import com.bbs.exception.UpdateFailedException;
 import com.bbs.repo.UserRepository;
 import com.bbs.services.AdminServicImpl;
 import com.bbs.services.ServiceAdmin;
@@ -139,65 +142,64 @@ public class App {
 
 							List<Bus> buses = service.searchBus(ticket.getSource(), ticket.getDestination(), date);
 							Bus bus = buses.get(0);
-							if(bus!= null)
-							{
-							System.out.println(buses);
-
-							System.out.println("Enter Bus Id");
-							check = true;
-							while (check) {
-								String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
-								if (uid != null) {
-
-									ticket.setBusId(Integer.parseInt(uid));
-									check = false;
-								} else {
-									CustomException exception = new CustomException("CustomException:Enter Integer Id");
-									exception.getMessage();
-								}
-							}
-							 bus = service.searchBus(ticket.getBusId());
 							if (bus != null) {
-								Integer availSeats = service.checkAvailability(ticket.getBusId(), date);
+								System.out.println(buses);
 
-								System.out.println("Enter Number of tickets ");
+								System.out.println("Enter Bus Id");
 								check = true;
 								while (check) {
 									String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
 									if (uid != null) {
 
-										ticket.setNumberOfSeats((Integer.parseInt(uid)));
+										ticket.setBusId(Integer.parseInt(uid));
 										check = false;
 									} else {
-										BookingFailedException exception = new BookingFailedException(
-												"BookingFailedException:Provide Proper Integer");
-									}
-								}
-								if (availSeats >= ticket.getNumberOfSeats()) {
-									Booking booking = service.bookTicket(ticket);
-									if (booking != null) {
-										System.out.println(booking);
-										System.out.println("Ticket Booked Succesfully");
-									} else {
-										BookingFailedException exception = new BookingFailedException(
-												"BookingFailedException:InternalError");
+										CustomException exception = new CustomException(
+												"CustomException:Enter Integer Id");
 										exception.getMessage();
 									}
-								}else {
+								}
+								bus = service.searchBus(ticket.getBusId());
+								if (bus != null) {
+									Integer availSeats = service.checkAvailability(ticket.getBusId(), date);
 
-								BookingFailedException exception = new BookingFailedException(
-										"BookingFailedException:NoTicketsAvailable");
-								exception.getMessage();
+									System.out.println("Enter Number of tickets ");
+									check = true;
+									while (check) {
+										String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
+										if (uid != null) {
+
+											ticket.setNumberOfSeats((Integer.parseInt(uid)));
+											check = false;
+										} else {
+											BookingFailedException exception = new BookingFailedException(
+													"BookingFailedException:Provide Proper Integer");
+										}
+									}
+									if (availSeats >= ticket.getNumberOfSeats()) {
+										Booking booking = service.bookTicket(ticket);
+										if (booking != null) {
+											System.out.println(booking);
+											System.out.println("Ticket Booked Succesfully");
+										} else {
+											BookingFailedException exception = new BookingFailedException(
+													"BookingFailedException:InternalError");
+											exception.getMessage();
+										}
+									} else {
+
+										BookingFailedException exception = new BookingFailedException(
+												"BookingFailedException:NoTicketsAvailable");
+										exception.getMessage();
+									}
+								} else {
+									CustomException exception = new CustomException(
+											"CustomException:Enter Valid Bus Id");
+									exception.getMessage();
 								}
 							} else {
-								CustomException exception = new CustomException("CustomException:Enter Valid Bus Id");
-								exception.getMessage();
-							}
-							}
-							else
-							{
 								CustomException exception = new CustomException("CustomException:No Bus Available");
-								exception.getMessage();	
+								exception.getMessage();
 							}
 						} catch (Exception e) {
 							CustomException exception = new CustomException("CustomException:No Bus Available");
@@ -206,6 +208,10 @@ public class App {
 						}
 
 					} else if (choice == 5) {
+						List<Booking> bookings = service.getAllTickets(userId);
+						for (Booking booking : bookings) {
+							System.out.println(booking);
+						}
 						System.out.println("Enter Booking Id");
 						check = true;
 						while (check) {
@@ -215,19 +221,25 @@ public class App {
 								bookingId = Integer.parseInt(uid);
 								check = false;
 							} else {
-								CustomException exception = new CustomException("CustomException:BookingId should be Integer");
+								CustomException exception = new CustomException(
+										"CustomException:BookingId should be Integer");
 								exception.getMessage();
 							}
 						}
-						Booking booking = service.getTicket(bookingId,userId);
+						Booking booking = service.getTicket(bookingId, userId);
 						if (booking != null) {
 							System.out.println(booking);
 						} else {
-							TicketRetrievalFailedException exception = new TicketRetrievalFailedException("TicketRetrievalFailedException:BookingId not found");
+							TicketRetrievalFailedException exception = new TicketRetrievalFailedException(
+									"TicketRetrievalFailedException:BookingId not found");
 							exception.getMessage();
 						}
 
 					} else if (choice == 6) {
+						List<Booking> bookings = service.getAllTickets(userId);
+						for (Booking booking : bookings) {
+							System.out.println(booking);
+						}
 						check = true;
 						System.out.println("Enter Booking ID");
 						while (check) {
@@ -237,24 +249,25 @@ public class App {
 								bookingId = Integer.parseInt(uid);
 								check = false;
 							} else {
-								CustomException exception = new CustomException("CustomException:BookingId should be Integer");
+								CustomException exception = new CustomException(
+										"CustomException:BookingId should be Integer");
 								exception.getMessage();
 							}
 						}
-						Booking booking = service.getTicket(bookingId,userId);
-						if(booking!=null)
-						{
-						System.out.println(booking);
-						Boolean del = service.cancelTicket(booking);
-						if (del) {
-							System.out.println("Successfully Cancelled");
+						Booking booking = service.getTicket(bookingId, userId);
+						if (booking != null) {
+							System.out.println(booking);
+							Boolean del = service.cancelTicket(booking);
+							if (del) {
+								System.out.println("Successfully Cancelled");
+							} else {
+								CancelFailedException exception = new CancelFailedException(
+										"CancelFailedException:Internal Error");
+								exception.getMessage();
+							}
 						} else {
-							CancelFailedException exception = new CancelFailedException("CancelFailedException:Internal Error");
-							exception.getMessage();
-						}
-						}else
-						{
-							CancelFailedException exception = new CancelFailedException("CancelFailedException:Cant Find Booking Id");
+							CancelFailedException exception = new CancelFailedException(
+									"CancelFailedException:Cant Find Booking Id");
 							exception.getMessage();
 						}
 
@@ -284,59 +297,51 @@ public class App {
 					}
 				}
 				User user = service.searchUser(user4.getUserId());
-				if(user != null)
-				{
+				if (user != null) {
 					CustomException exception = new CustomException("CustomException:UserId Already Exist");
 					exception.getMessage();
 					break;
-				}
-				else
-				{
-				System.out.println("Enter Email");
-				String email = service.checkEmail(sc.next());
-				if(email != null)
-				{
-				user4.setEmail(email);
-				}
-				else
-				{
-					break;
-				}
-				user = service.searchUser(user4.getEmail());
-				if(user!=null)
-				{
-					CustomException exception = new CustomException("CustomException:Email Already Exist");
-					exception.getMessage();
-					break;
-				}
-				else
-				{
-				System.out.println("Enter UserName");
-				Scanner scan = new Scanner(System.in);
-				String userName = scan.nextLine();
-				System.out.println("\n");
-				user4.setUserName(userName);
-				System.out.println("Enter Password");
-				user4.setPassword(sc.next());
-				System.out.println("Enter Contact number");
-				check = true;
-				while (check) {
-					String uid = service.checkContact(sc.next());
-					if (uid != null) {
-						user4.setContact(Long.parseLong(uid));
-						check = false;
-					} else {
-					CustomException exception = new CustomException("CustomException:Provide Proper Contact");
-					exception.getMessage();
-					}
-				}
-				if (service.createUser(user4)) {
-					System.out.println("User Added");
 				} else {
-					CustomException exception = new CustomException("CustomException:Profile Creation Failed");
-					exception.getMessage();
-				}
-				}
+					System.out.println("Enter Email");
+					String email = service.checkEmail(sc.next());
+					if (email != null) {
+						user4.setEmail(email);
+					} else {
+						break;
+					}
+					user = service.searchUser(user4.getEmail());
+					if (user != null) {
+						CustomException exception = new CustomException("CustomException:Email Already Exist");
+						exception.getMessage();
+						break;
+					} else {
+						System.out.println("Enter UserName");
+						Scanner scan = new Scanner(System.in);
+						String userName = scan.nextLine();
+						System.out.println("\n");
+						user4.setUserName(userName);
+						System.out.println("Enter Password");
+						user4.setPassword(sc.next());
+						System.out.println("Enter Contact number");
+						check = true;
+						while (check) {
+							String uid = service.checkContact(sc.next());
+							if (uid != null) {
+								user4.setContact(Long.parseLong(uid));
+								check = false;
+							} else {
+								CustomException exception = new CustomException(
+										"CustomException:Provide Proper Contact");
+								exception.getMessage();
+							}
+						}
+						if (service.createUser(user4)) {
+							System.out.println("User Added");
+						} else {
+							CustomException exception = new CustomException("CustomException:Profile Creation Failed");
+							exception.getMessage();
+						}
+					}
 				}
 			} else if (firstChoice == 9) {
 				System.out.println("Enter Admin Id");
@@ -347,12 +352,23 @@ public class App {
 						adminId = Integer.parseInt(uid);
 						check = false;
 					} else {
-						System.out.println("Provide Proper Input");
+
+						CustomException exception = new CustomException("LoginException:Provide Integer AdminId");
+						exception.getMessage();
 					}
 				}
-				System.out.println("Enter Admin Password");
-				String AdminPassword = sc.next();
-				Boolean adminLogin = adminService.adminLogin(adminId, AdminPassword);
+				Admin admin = adminService.searchAdmin(adminId);
+				Boolean adminLogin = false;
+				if (admin != null) {
+					System.out.println("Enter Admin Password");
+					String AdminPassword = sc.next();
+					adminLogin = adminService.adminLogin(adminId, AdminPassword);
+
+				} else {
+					LoginException exception = new LoginException("LoginException:AdminId Doesnot Exist");
+					exception.getMessage();
+				}
+
 				System.out.println("Admin Login :" + adminLogin);
 				while (adminLogin) {
 					System.out.println("********************************************");
@@ -379,89 +395,99 @@ public class App {
 								bus2.setBusId(Integer.parseInt(uid));
 								check = false;
 							} else {
-								System.out.println("Provide Proper Input");
+								CustomException exception = new CustomException(
+										"CustomException:BusId Should be Integer");
+								exception.getMessage();
+
 							}
+
 						}
-						System.out.println("Enter Bus Name");
-						bus2.setBusName(sc.next());
-						System.out.println("bus Type");
-						bus2.setBusType(sc.next());
-						System.out.println("Source");
-						bus2.setSource(sc.next());
-						System.out.println("Destination");
-						bus2.setDestination(sc.next());
-						System.out.println("Total Seats ");
-						check = true;
-						while (check) {
-							String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
-							if (uid != null) {
-
-								bus2.setTotalSeats((Integer.parseInt(uid)));
-								check = false;
-							} else {
-								System.out.println("Provide Proper Input");
-							}
-						}
-						System.out.println("Price");
-						check = true;
-						while (check) {
-							String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
-							if (uid != null) {
-
-								bus2.setPrice(Integer.parseInt(uid));
-								check = false;
-							} else {
-								System.out.println("Provide Proper Input");
-							}
-						}
-						Boolean create = adminService.createBus(bus2);
-						if (create) {
-							System.out.println("Bus Added Successfully");
-							System.out.println("-----------------------------------------------------");
-							Available available = new Available();
-							System.out.println("Enter Avail iD");
-							check = true;
-							while (check) {
-								String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
-								if (uid != null) {
-
-									available.setAvailId(Integer.parseInt(uid));
-									check = false;
-								} else {
-									System.out.println("Provide Proper Input");
-								}
-							}
-							System.out.println("Enter Avail Seats");
-							check = true;
-							while (check) {
-								String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
-								if (uid != null) {
-
-									available.setAvailSeats(Integer.parseInt(uid));
-									check = false;
-								} else {
-									System.out.println("Provide Proper Input");
-								}
-							}
-							System.out.println("Enter busId");
-							check = true;
-							while (check) {
-								String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
-								if (uid != null) {
-
-									available.setBusId(Integer.parseInt(uid));
-									check = false;
-								} else {
-									System.out.println("Provide Proper Input");
-								}
-							}
-							System.out.println("Enter Date");
-							available.setJourneyDate(sc.next());
-							if (adminService.addAvailability(available)) {
-								System.out.println("Available added successfull");
-							}
+						Bus bus = adminService.searchBus(bus2.getBusId());
+						if (bus != null) {
+							CustomException exception = new CustomException("CustomException:BusId ALREADY Exist");
+							exception.getMessage();
+							break;
 						} else {
-							System.out.println("Please Try Again....");
+							System.out.println("Enter Bus Name");
+							bus2.setBusName(sc.next());
+							System.out.println("bus Type");
+							bus2.setBusType(sc.next());
+							System.out.println("Source");
+							bus2.setSource(sc.next());
+							System.out.println("Destination");
+							bus2.setDestination(sc.next());
+							System.out.println("Total Seats ");
+							check = true;
+							while (check) {
+								String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
+								if (uid != null) {
+
+									bus2.setTotalSeats((Integer.parseInt(uid)));
+									check = false;
+								} else {
+									CustomException exception = new CustomException(
+											"CustomException:TotalSeats Should be Integer");
+									exception.getMessage();
+								}
+							}
+							System.out.println("Price");
+							check = true;
+							while (check) {
+								String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
+								if (uid != null) {
+
+									bus2.setPrice(Integer.parseInt(uid));
+									check = false;
+								} else {
+									CustomException exception = new CustomException(
+											"CustomException:Price Should be Number");
+									exception.getMessage();
+								}
+							}
+							Boolean create = adminService.createBus(bus2);
+							if (create) {
+								System.out.println("Bus Added Successfully");
+								System.out.println("-----------------------------------------------------");
+								Available available = new Available();
+								System.out.println("Enter Avail iD");
+								check = true;
+								while (check) {
+									String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
+									if (uid != null) {
+
+										available.setAvailId(Integer.parseInt(uid));
+										check = false;
+									} else {
+										CustomException exception = new CustomException(
+												"CustomException:AvailId Should be Number");
+										exception.getMessage();
+									}
+								}
+								System.out.println("Enter Avail Seats");
+								check = true;
+								while (check) {
+									String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
+									if (uid != null) {
+
+										available.setAvailSeats(Integer.parseInt(uid));
+										check = false;
+									} else {
+										CustomException exception = new CustomException(
+												"CustomException:AvailSeats Should be Number");
+										exception.getMessage();
+									}
+								}
+								available.setBusId(bus2.getBusId());
+								System.out.println("Enter Date");
+								available.setJourneyDate(sc.next());
+								if (adminService.addAvailability(available)) {
+									System.out.println("Available added successfull");
+								}
+							} else {
+								CustomException exception = new CustomException(
+										"CustomException:Failed To Add Availability");
+								exception.getMessage();
+							}
 						}
 					}
 
@@ -475,7 +501,8 @@ public class App {
 								busId = Integer.parseInt(uid);
 								check = false;
 							} else {
-								System.out.println("Provide Proper Input");
+								CustomException exception = new CustomException("CustomException:Provide Proper BusId");
+								exception.getMessage();
 							}
 						}
 						Bus bus = adminService.searchBus(busId);
@@ -485,6 +512,9 @@ public class App {
 									+ ", bus Type=" + bus.getBusType() + ", Seats=" + bus.getTotalSeats() + ", price="
 									+ bus.getPrice() + "]");
 
+						} else {
+							CustomException exception = new CustomException("CustomException:No Bus Found");
+							exception.getMessage();
 						}
 
 					} else if (adminChoice == 3) {
@@ -497,7 +527,8 @@ public class App {
 								busId = Integer.parseInt(uid);
 								check = false;
 							} else {
-								System.out.println("Provide Proper Input");
+								CustomException exception = new CustomException("CustomException:Provide Proper BusId");
+								exception.getMessage();
 							}
 						}
 						Bus bus = adminService.searchBus(busId);
@@ -510,8 +541,6 @@ public class App {
 							bus.setSource(sc.next());
 							System.out.println("Enter Destination");
 							bus.setDestination(sc.next());
-							System.out.println("Total Seats");
-							bus.setTotalSeats(sc.nextInt());
 							System.out.println("Price");
 							check = true;
 							while (check) {
@@ -521,16 +550,38 @@ public class App {
 									bus.setPrice(Integer.parseInt(uid));
 									check = false;
 								} else {
-									System.out.println("Provide Proper Input");
+									CustomException exception = new CustomException(
+											"CustomException:Price Should be Number");
+									exception.getMessage();
 								}
 							}
+							System.out.println("Total Seats ");
+							check = true;
+							while (check) {
+								String uid = service.checkUserIdAndBookinIdAndBusId((sc.next()));
+								if (uid != null) {
+
+									bus.setTotalSeats((Integer.parseInt(uid)));
+									check = false;
+								} else {
+									CustomException exception = new CustomException(
+											"CustomException:TotalSeats Should be Integer");
+									exception.getMessage();
+								}
+							}
+
 							Boolean updateBus = adminService.updateBus(bus);
 							if (updateBus) {
 								System.out.println("Bus Info Updated");
 							} else {
-								System.out.println("Please Try Again....");
+								UpdateFailedException exception = new UpdateFailedException(
+										"UpdateFailedException:Provide Proper BusId");
+								exception.getMessage();
 							}
 
+						} else {
+							CustomException exception = new CustomException("CustomException:No Bus Found");
+							exception.getMessage();
 						}
 
 					} else if (adminChoice == 4) {
@@ -543,14 +594,23 @@ public class App {
 								busId = Integer.parseInt(uid);
 								check = false;
 							} else {
-								System.out.println("Provide Proper Input");
+								CustomException exception = new CustomException("CustomException:Provide Proper BusId");
+								exception.getMessage();
 							}
 						}
-						Boolean del = adminService.deletebus(busId);
-						if (del) {
-							System.out.println("Bus Deleted");
+						Bus bus = adminService.searchBus(busId);
+						if (bus != null) {
+							Boolean del = adminService.deletebus(busId);
+							if (del) {
+								System.out.println("Bus Deleted");
+							} else {
+								DeleteFailedException exception = new DeleteFailedException(
+										"DeleteFailedException:Failed to Delete");
+							}
 						} else {
-							System.out.println("Please Try Again....");
+							CustomException exception = new CustomException("CustomException:No Bus Found");
+							exception.getMessage();
+
 						}
 
 					} else if (adminChoice == 5) {
@@ -560,6 +620,7 @@ public class App {
 						String destination = sc.next();
 						HashMap map = adminService.busBetween(source, destination);
 						System.out.println(map);
+
 					}
 
 					else if (adminChoice == 6) {

@@ -300,4 +300,17 @@ public class DaoUserImpl implements DaoUser {
 		}
 		return null;
 	}
+
+	@Override
+	public List<Booking> getAllTickets(int userId) {
+		List<Booking> bookings = new ArrayList<>();
+		int i = 0;
+		for(Map.Entry pair : bookingDb.entrySet())
+		{
+			Booking booking = (Booking) pair.getValue();
+			bookings.add(i, booking);
+			i++;
+		}
+		return bookings;
+	}
 }

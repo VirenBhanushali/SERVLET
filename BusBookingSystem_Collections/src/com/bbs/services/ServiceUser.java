@@ -31,4 +31,5 @@ public interface ServiceUser {
 	public String checkContact (String contact);
 	public String checkEmail (String email);
 	public String checkDate(String date);
+	public List<Booking> getAllTickets(int userId);
 }

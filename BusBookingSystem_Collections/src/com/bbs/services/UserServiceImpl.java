@@ -146,6 +146,11 @@ public class UserServiceImpl implements ServiceUser {
 	public User searchUser(String userName) {
 		return dao.searchUser(userName);
 	}
+
+	@Override
+	public List<Booking> getAllTickets(int userId) {
+		return dao.getAllTickets(userId);
+	}
 }
 
 

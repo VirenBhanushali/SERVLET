@@ -10,6 +10,7 @@ import java.util.Set;
 import com.bbs.beans.Admin;
 import com.bbs.beans.Available;
 import com.bbs.beans.Bus;
+import com.bbs.beans.User;
 import com.bbs.exception.CustomException;
 import com.bbs.exception.DeleteFailedException;
 import com.bbs.exception.LoginException;
@@ -101,6 +102,10 @@ public class DaoAdminImpl implements DaoAdmin {
 			{
 				return true;
 			}
+			else
+			{
+				LoginException exception = new LoginException("LoginException:Wrong password Given");
+			}
 		} catch (Exception e) {
 
 			throw new LoginException("Login Failed Provide Proper Credentials");
@@ -139,6 +144,23 @@ public class DaoAdminImpl implements DaoAdmin {
 			return true;
 		} catch (Exception e) {
 			throw new CustomException("Failed To Add Availabliltiy");
+		}
+	}
+
+	@Override
+	public Admin searchAdmin(int adminId) {
+		try {
+			Admin admin = null;
+			Iterator it = adminDb.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry pair = (Map.Entry) it.next();
+				if (pair.getKey().equals(adminId)) {
+					return (Admin) pair.getValue();
+				}
+			}
+			return admin;
+		} catch (Exception e) {
+			throw new CustomException("LoginException:Provide Proper adminId");
 		}
 	}
 

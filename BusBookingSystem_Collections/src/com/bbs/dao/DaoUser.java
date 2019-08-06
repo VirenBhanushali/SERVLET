@@ -20,6 +20,7 @@ public interface DaoUser {
 	public HashMap<Integer, Bus> getAllBus();
 	public List<Bus> searchBus(String source,String destination , Date date);
 	public User searchUser(String userName);
+	public List<Booking> getAllTickets(int userId);
 	
 	
 	public Booking bookTicket(Ticket ticket);
